@@ -49,6 +49,7 @@ Không có
 > https://1512029@bitbucket.org/1512029/explorer.git
 ```
 Chú ý link repository trên là private đã add key public của giáo viên.
+Đồng thời add user tdquang7 vào repository với quyền read.
 ```
 ### ------------- LINK YOUTUBE ------------
 > https://youtu.be/lkTBUPsHiHU
