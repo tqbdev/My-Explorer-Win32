@@ -9,6 +9,7 @@
 1. Giao diện chương trình. (TreeView, ListView)
 2. Xử lý TreeView, ListView, FileSystem.
 3. Cụ thể:
+
 > #TreeView
 1. Load được ThisPC liệt kê các ổ đĩa hiện có.
 2. Bắt được các sự kiện Expanding load folder con.
