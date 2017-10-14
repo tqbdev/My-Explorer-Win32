@@ -54,4 +54,5 @@ Chú ý link repository trên là private đã add key public của giáo viên.
 Đồng thời add user tdquang7 vào repository với quyền read.
 ```
 ### ------------- LINK YOUTUBE ------------
-> https://youtu.be/lkTBUPsHiHU
+> ver 1.0: https://youtu.be/lkTBUPsHiHU
+> ver 2.0: https://youtu.be/1HACDOUGAtw
