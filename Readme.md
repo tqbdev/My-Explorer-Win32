@@ -31,6 +31,8 @@
 1. Sử dụng link-list để collect các pointer khởi tạo. Tránh gây tràn bộ nhớ cấp phát.
 giải quyết được tình trạng chạy nhiều lần sẽ bị treo ứng dụng.
 (Giải quyết toàn bộ leak - Dùng Visual Leak Detector for Visual C++ 2008-2015 để kiểm tra)
+2. Sử dụng kỹ thuật thread để load tránh crash ứng dụng lúc load quá nhiều dữ liệu như là
+load folder System32
 
 ### -------------- MAIN FLOW --------------
 1. Chạy chương trình hiển thị node ThisPC trên TreeView ở trạng thái expand (mở rộng),
