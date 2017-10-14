@@ -17,6 +17,7 @@ namespace MyExplorer
 		NodePointer* head_;
 	public:
 		void AddPointer(TCHAR* data);
+		void ClearAll();
 		ListPointer();
 		~ListPointer();
 	};

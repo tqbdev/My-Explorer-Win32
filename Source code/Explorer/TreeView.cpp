@@ -8,6 +8,13 @@
 
 namespace MyExplorer
 {
+	DWORD WINAPI CollectGarbage(LPVOID lpParameter)
+	{
+		ListPointer* p = (ListPointer*)lpParameter;
+		p->ClearAll();
+		delete p;
+		return 0;
+	}
 	/*-----------------------------------------------------------------------------------------------------*/
 	TreeView::TreeView()
 	{
@@ -17,10 +24,12 @@ namespace MyExplorer
 		this->ID_ = -1;
 
 		this->hIml = NULL;
+		this->lstPointer_ = new ListPointer();
 	}
 
 	TreeView::~TreeView()
 	{
+		if (this->lstPointer_) if (this->lstPointer_) CreateThread(NULL, 0, CollectGarbage, this->lstPointer_, 0, 0);
 		if (this->hIml) delete hIml;
 		if (this->hTreeView_) DestroyWindow(this->hTreeView_);
 	}
@@ -39,7 +48,10 @@ namespace MyExplorer
 		int Width, int Height, int x, int y,
 		long lExtStyle, long lStyle)
 	{
-		InitCommonControls();
+		INITCOMMONCONTROLSEX icex;
+		icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+		icex.dwICC = ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES;
+		InitCommonControlsEx(&icex);
 
 		this->hInst_ = hParentInst;
 		this->hParent_ = parentWnd;
@@ -112,7 +124,7 @@ namespace MyExplorer
 	{
 		TVITEMEX tv;
 		TCHAR *buffer = new TCHAR[256];
-		lstPointer_.AddPointer(buffer);
+		lstPointer_->AddPointer(buffer);
 
 		tv.mask = TVIF_TEXT;
 		tv.hItem = GetCurSel();
@@ -147,68 +159,18 @@ namespace MyExplorer
 		{
 			tvInsert.hParent = hThisPC; //Them
 			tvInsert.item.iImage = listDisk->GetIconID(i);
+			tvInsert.item.mask = TVIF_CHILDREN | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+			tvInsert.item.cChildren = 1;
 			tvInsert.item.iSelectedImage = listDisk->GetIconID(i);
 			tvInsert.item.pszText = listDisk->GetFullDiskName(i);
 			tvInsert.item.lParam = (LPARAM)listDisk->GetDiskPath(i);
-			HTREEITEM hlistDisk = TreeView_InsertItem(this->hTreeView_, &tvInsert);
 
-			//Preload
-			if ((listDisk->GetIconID(i) == IDI_DISK) || (listDisk->GetIconID(i) == IDI_USB))
-			{
-				tvInsert.hParent = hlistDisk; //Them
-				tvInsert.item.pszText = L"PreLoad"; //Them
-				tvInsert.item.lParam = (LPARAM)L"PreLoad";
-				TreeView_InsertItem(this->hTreeView_, &tvInsert);
-			}
+			TreeView_InsertItem(this->hTreeView_, &tvInsert);
 		}
 
 		// Mặc định cho ThisPC expand và select luôn
 		TreeView_Expand(this->hTreeView_, hThisPC, TVE_EXPAND);
 		TreeView_SelectItem(this->hTreeView_, hThisPC);
-	}
-
-	void TreeView::PreLoad(HTREEITEM hItem)
-	{
-		std::wstring pathHandle = GetPath(hItem);
-
-		if (pathHandle.length() == 3)
-		{
-			if (pathHandle == L"A:" || pathHandle == L"B:") // Đĩa mềm bỏ qua
-				return;
-		}
-		else
-		{
-			pathHandle += L"\\";
-		}
-
-		pathHandle += L"*";
-
-		WIN32_FIND_DATA fd;
-		HANDLE hFile = FindFirstFileW(const_cast<LPWSTR>(pathHandle.c_str()), &fd);
-
-		if (hFile == INVALID_HANDLE_VALUE)
-			return;
-
-		BOOL bFound = true;
-
-		//Trong khi còn tìm thấy file hay thư mục
-		while (bFound)
-		{
-			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				&& (StrCmp(fd.cFileName, L".") != 0) && (StrCmp(fd.cFileName, L"..") != 0))
-			{
-				TV_INSERTSTRUCT tvInsert;
-				tvInsert.hParent = hItem;
-				tvInsert.hInsertAfter = TVI_LAST;
-				tvInsert.item.mask = TVIF_TEXT | TVIF_PARAM;
-				tvInsert.item.pszText = NULL;
-				tvInsert.item.lParam = (LPARAM)L"PreLoad";
-				TreeView_InsertItem(this->hTreeView_, &tvInsert);
-				bFound = FALSE;
-			}
-			else
-				bFound = FindNextFileW(hFile, &fd);
-		}
 	}
 
 	void TreeView::LoadChild(HTREEITEM &hParent, LPCWSTR path, BOOL bShowHiddenSystem)
@@ -221,7 +183,8 @@ namespace MyExplorer
 		TV_INSERTSTRUCT tvInsert;
 		tvInsert.hParent = hParent;
 		tvInsert.hInsertAfter = TVI_LAST;
-		tvInsert.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+		tvInsert.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_CHILDREN;
+		tvInsert.item.cChildren = 0;
 		tvInsert.item.iImage = IDI_FOLDER;
 		tvInsert.item.iSelectedImage = IDI_FOLDER;
 
@@ -235,14 +198,16 @@ namespace MyExplorer
 		TCHAR* folderPath = NULL;
 		while (bFound)
 		{
+			tvInsert.item.cChildren = 0;
 			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				&& ((fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != FILE_ATTRIBUTE_HIDDEN)
 				&& ((fd.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != FILE_ATTRIBUTE_SYSTEM)
 				&& (StrCmp(fd.cFileName, L".") != 0) && (StrCmp(fd.cFileName, L"..") != 0))
 			{
 				tvInsert.item.pszText = fd.cFileName;
-				folderPath = new TCHAR[pathHandle.length() + wcslen(fd.cFileName) + 2];
-				lstPointer_.AddPointer(folderPath);
+				int len = pathHandle.length() + wcslen(fd.cFileName) + 2;
+				folderPath = new TCHAR[len];
+				lstPointer_->AddPointer(folderPath);
 
 				StrCpy(folderPath, path);
 				if (wcslen(path) != 3)
@@ -250,27 +215,49 @@ namespace MyExplorer
 				StrCat(folderPath, fd.cFileName);
 
 				tvInsert.item.lParam = (LPARAM)folderPath;
-				HTREEITEM hItem = TreeView_InsertItem(this->hTreeView_, &tvInsert);
+
 				//Preload
-				PreLoad(hItem);
+				WIN32_FIND_DATA fd_;
+				std::wstring pathChild = folderPath;
+				pathChild += L"\\*";
+				HANDLE hFile_ = FindFirstFileW(const_cast<LPWSTR>(pathChild.c_str()), &fd_);
+
+				BOOL bFound_ = true;
+
+				if (hFile_ == INVALID_HANDLE_VALUE)
+				{
+					bFound_ = FALSE;
+				}
+
+				// Tìm thấy thư mục hay tập tin thì thêm cChildren
+				while (bFound_)
+				{
+					if ((fd_.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+						&& (StrCmp(fd_.cFileName, L".") != 0) && (StrCmp(fd_.cFileName, L"..") != 0))
+					{
+						tvInsert.item.cChildren = 1;
+						break;
+					}
+					else
+						bFound_ = FindNextFileW(hFile_, &fd_);
+				}
+				// Preload
+
+				HTREEITEM hItem = TreeView_InsertItem(this->hTreeView_, &tvInsert);
 			}
 
 			bFound = FindNextFileW(hFile, &fd);
 		}//while
 	}
 
-	void TreeView::PreloadExpanding(HTREEITEM hPrev, HTREEITEM hCurSel)
+	void TreeView::Expanding(HTREEITEM hPrev, HTREEITEM hCurSel)
 	{
 		if (hCurSel == GetRoot()) //Nếu ThisPC chưa nạp thoát
 			return;
 
 		HTREEITEM hCurSelChild = TreeView_GetChild(this->hTreeView_, hCurSel);
 
-		if (!StrCmp(GetPath(hCurSelChild), L"PreLoad"))
-		{
-			TreeView_DeleteItem(this->hTreeView_, hCurSelChild);
-			LoadChild(hCurSel, GetPath(hCurSel));
-		}
+		LoadChild(hCurSel, GetPath(hCurSel));
 	}
 
 	void TreeView::Expand(HTREEITEM hItem)

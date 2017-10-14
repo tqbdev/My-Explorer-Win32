@@ -34,8 +34,8 @@ namespace MyExplorer
 			head_ = result;
 		}
 	}
-	
-	ListPointer::~ListPointer()
+
+	void ListPointer::ClearAll()
 	{
 		NodePointer* current = head_;
 		while (head_)
@@ -46,5 +46,11 @@ namespace MyExplorer
 			delete current;
 			current = head_;
 		}
+		head_ = NULL;
+	}
+	
+	ListPointer::~ListPointer()
+	{
+		ClearAll();
 	}
 }

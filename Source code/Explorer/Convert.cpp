@@ -75,11 +75,9 @@ namespace MyExplorer
 		SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
 
 		TCHAR *buffer = new TCHAR[50];
-		wsprintf(buffer, L"%02d/%02d/%04d %02d:%02d %s",
+		wsprintf(buffer, L"%02d/%02d/%04d %02d:%02d",
 			stLocal.wDay, stLocal.wMonth, stLocal.wYear,
-			(stLocal.wHour>12) ? (stLocal.wHour / 12) : (stLocal.wHour),
-			stLocal.wMinute,
-			(stLocal.wHour>12) ? L"Chiều" : L"Sáng");
+			stLocal.wHour, stLocal.wMinute);
 
 		return buffer;
 	}

@@ -33,7 +33,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		if (!TranslateAccelerator(hwndMain, hAccelTable, &msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -87,6 +87,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+
+	hwndMain = hWnd;
 
 	if (!hWnd)
 	{
@@ -183,7 +185,6 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 LRESULT OnNotify(HWND hwnd, int idFrom, NMHDR *pnm)
 {
-	int nCurSelIndex;
 	LPNMTOOLBAR lpnmToolBar = (LPNMTOOLBAR)pnm;
 
 	if (g_InitComplete) //Để tránh vòng lặp
@@ -193,22 +194,29 @@ LRESULT OnNotify(HWND hwnd, int idFrom, NMHDR *pnm)
 		switch (pnm->code)
 		{
 		case TVN_ITEMEXPANDING:
-			g_TreeView->PreloadExpanding(lpnmTree->itemOld.hItem, lpnmTree->itemNew.hItem);
+			g_TreeView->Expanding(lpnmTree->itemOld.hItem, lpnmTree->itemNew.hItem);
 
 			break;
 			//------------------------------------------------------------------------------
 		case TVN_SELCHANGED:
-			g_TreeView->Expand(g_TreeView->GetCurSel());
-			g_ListView->ClearAll(); //Xóa sạch List View để nạp cái mới
-			g_ListView->LoadChild(g_TreeView->GetCurPath());
+			TerminateThread(g_thread_1, 0); // Tránh trường hợp đang load cái cũ giữa chừng load cái mới chồng lên
+			CreateThread(NULL, 0, LoadTreeViewExpand, g_TreeView, 0, 0);
+			g_thread_1 = CreateThread(NULL, 0, LoadListView, g_ListView, 0, 0);
+
 			break;
 		case NM_DBLCLK:
 			if (pnm->hwndFrom == g_ListView->GetThisHandle())
-				g_ListView->LoadCurSel();
+			{
+				TerminateThread(g_thread_1, 0); // Tránh trường hợp đang load cái cũ giữa chừng load cái mới chồng lên
+				TerminateThread(g_thread_2, 0); // Tránh trường hợp đang load cái cũ giữa chừng load cái mới chồng lên
+				g_thread_2 = CreateThread(NULL, 0, LoadListViewDBClick, g_ListView, 0, 0);
+			}
 			break;
 		case NM_CUSTOMDRAW: // Khi người dùng kéo thay đổi kích thước TreeView
 			if (pnm->hwndFrom == g_TreeView->GetThisHandle())
+			{
 				g_ListView->Resize();
+			}
 			break;
 		}
 
@@ -239,4 +247,29 @@ void OnDestroy(HWND hwnd)
 	delete g_ListDisk;
 	delete g_ListView;
 	delete g_TreeView;
+}
+
+DWORD WINAPI LoadListViewDBClick(LPVOID lpParameter)
+{
+	MyExplorer::ListView* p = (MyExplorer::ListView*)lpParameter;
+	p->LoadCurSel();
+
+	return 0;
+}
+
+DWORD WINAPI LoadTreeViewExpand(LPVOID lpParameter)
+{
+	MyExplorer::TreeView* p = (MyExplorer::TreeView*)lpParameter;
+	p->Expand(p->GetCurSel());
+
+	return 0;
+}
+
+DWORD WINAPI LoadListView(LPVOID lpParameter)
+{
+	MyExplorer::ListView* p = (MyExplorer::ListView*)lpParameter;
+	p->ClearAll(); //Xóa sạch List View để nạp cái mới
+	p->LoadChild(g_TreeView->GetCurPath());
+
+	return 0;
 }

@@ -12,6 +12,13 @@
 
 namespace MyExplorer
 {
+	/*DWORD WINAPI CollectGarbage(LPVOID lpParameter)
+	{
+		ListPointer* p = (ListPointer*)lpParameter;
+		p->ClearAll();
+		delete p;
+		return 0;
+	}*/
 	/*-----------------------------------------------------------------------------------------------------*/
 	ListView::ListView()
 	{
@@ -23,10 +30,14 @@ namespace MyExplorer
 		this->lstDrive_ = NULL;
 
 		this->hIml = NULL;
+		this->lstPointer_ = new ListPointer();
+		this->lstCircle_ = new ListPointer();
 	}
 
 	ListView::~ListView()
 	{
+		if (this->lstPointer_) CreateThread(NULL, 0, CollectGarbage, this->lstPointer_, 0, 0);
+		if (this->lstCircle_) CreateThread(NULL, 0, CollectGarbage, this->lstCircle_, 0, 0);
 		if (this->hIml) delete this->hIml;
 		if (this->hListView_) DestroyWindow(this->hListView_);
 	}
@@ -35,7 +46,11 @@ namespace MyExplorer
 		int Width, int Height, int x, int y,
 		long lExtStyle, long lStyle)
 	{
-		InitCommonControls();
+		INITCOMMONCONTROLSEX icex;
+		icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+		icex.dwICC = ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES;
+		InitCommonControlsEx(&icex);
+
 		this->hInst_ = hParentInst;
 		this->hParent_ = parentWnd;
 		this->hListView_ = CreateWindowEx(lExtStyle, WC_LISTVIEW, L"List View",
@@ -57,20 +72,20 @@ namespace MyExplorer
 		lvCol.fmt = LVCFMT_LEFT;
 
 		lvCol.cx = 180;
-		lvCol.pszText = L"Tên";
+		lvCol.pszText = L"Name";
 		ListView_InsertColumn(this->hListView_, 0, &lvCol);
 
 		lvCol.fmt = LVCFMT_LEFT | LVCF_WIDTH;
 		lvCol.cx = 100;
-		lvCol.pszText = L"Loại";
+		lvCol.pszText = L"Type";
 		ListView_InsertColumn(this->hListView_, 1, &lvCol);
 
 		lvCol.fmt = LVCFMT_RIGHT;
-		lvCol.pszText = L"Kích thước";
+		lvCol.pszText = L"Size";
 		lvCol.cx = 130;
 		ListView_InsertColumn(this->hListView_, 2, &lvCol);
 
-		lvCol.pszText = L"Mô tả";
+		lvCol.pszText = L"Description";
 		lvCol.cx = 130;
 		ListView_InsertColumn(this->hListView_, 3, &lvCol);
 	}
@@ -83,16 +98,16 @@ namespace MyExplorer
 
 		lvCol.fmt = LVCFMT_LEFT | LVCF_WIDTH;
 		//lvCol.cx = 100;
-		lvCol.pszText = L"Loại";
+		lvCol.pszText = L"Type";
 		ListView_SetColumn(this->hListView_, 1, &lvCol);
 
 		lvCol.fmt = LVCFMT_RIGHT | LVCF_WIDTH;
 		//lvCol.cx = 80;
-		lvCol.pszText = L"Tổng dung lượng";
+		lvCol.pszText = L"Total size";
 		ListView_SetColumn(this->hListView_, 2, &lvCol);
 
 		//lvCol.cx = 80;
-		lvCol.pszText = L"Dung lượng trống";
+		lvCol.pszText = L"Free space";
 		ListView_SetColumn(this->hListView_, 3, &lvCol);
 	}
 
@@ -107,18 +122,18 @@ namespace MyExplorer
 		lvCol.mask = LVCF_TEXT | LVCF_FMT;
 		lvCol.fmt = LVCFMT_RIGHT;
 		lvCol.cx = 130;
-		lvCol.pszText = L"Kích thước";
+		lvCol.pszText = L"Size";
 		ListView_SetColumn(this->hListView_, 1, &lvCol);
 
 
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
 		lvCol.fmt = LVCFMT_LEFT;
 		lvCol.cx = 130;
-		lvCol.pszText = L"Loại tập tin";
+		lvCol.pszText = L"Type";
 		ListView_SetColumn(this->hListView_, 2, &lvCol);
 
 		lvCol.cx = 180;
-		lvCol.pszText = L"Ngày chỉnh sửa";
+		lvCol.pszText = L"Date modified";
 		ListView_SetColumn(this->hListView_, 3, &lvCol);
 	}
 
@@ -158,7 +173,7 @@ namespace MyExplorer
 		HRESULT hr = SHGetFileInfo(path, FILE_ATTRIBUTE_NORMAL, &sfi, sizeof(sfi), flag);
 		if (SUCCEEDED(hr)) {
 			TCHAR* result = new TCHAR[wcslen(sfi.szTypeName) + 1];
-			lstPointer_.AddPointer(result);
+			lstPointer_->AddPointer(result);
 			StrCpy(result, sfi.szTypeName);
 			return result;
 		}
@@ -209,7 +224,7 @@ namespace MyExplorer
 			TCHAR *parent;
 			int nBackSlachPos = (StrRStrI(path, NULL, L"\\") - path);
 			parent = new TCHAR[nBackSlachPos + 2];
-			lstPointer_.AddPointer(parent);
+			lstPointer_->AddPointer(parent);
 			StrNCpy(parent, path, nBackSlachPos + 1);
 			if (wcslen(parent) == 2)
 			{
@@ -232,7 +247,7 @@ namespace MyExplorer
 			TCHAR *parent;
 			int nBackSlachPos = (StrRStrI(path, NULL, _T("\\")) - path);
 			parent = new TCHAR[nBackSlachPos + 2];
-			lstPointer_.AddPointer(parent);
+			lstPointer_->AddPointer(parent);
 			StrNCpy(parent, path, nBackSlachPos + 1);
 			return parent;
 		}
@@ -243,7 +258,7 @@ namespace MyExplorer
 	{
 		ListView_DeleteAllItems(this->hListView_);
 	}
-
+		
 	void ListView::LoadRoot()
 	{
 		LoadRoot(NULL);
@@ -342,6 +357,8 @@ namespace MyExplorer
 
 	void ListView::LoadFileAndFolder(LPCWSTR path)
 	{
+		if (this->lstCircle_) CreateThread(NULL, 0, CollectGarbage, this->lstCircle_, 0, 0);
+		this->lstCircle_ = new ListPointer();
 		this->InitFolderCol();
 		this->ClearAll();
 
@@ -376,7 +393,7 @@ namespace MyExplorer
 		if (bFound)
 		{
 			folderPath = new TCHAR[wcslen(path) + 1];
-			lstPointer_.AddPointer(folderPath);
+			lstCircle_->AddPointer(folderPath);
 			StrCpy(folderPath, this->GetParentPath(path));
 
 			lv.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
@@ -399,7 +416,7 @@ namespace MyExplorer
 				(StrCmp(fd.cFileName, L".") != 0) && (StrCmp(fd.cFileName, L"..") != 0))
 			{
 				folderPath = new TCHAR[wcslen(path) + wcslen(fd.cFileName) + 2];
-				lstPointer_.AddPointer(folderPath);
+				lstCircle_->AddPointer(folderPath);
 				StrCpy(folderPath, path);
 
 				if (wcslen(path) != 3)
@@ -418,11 +435,11 @@ namespace MyExplorer
 				//Bỏ qua cột thứ hai là Size không hiển thị dung lượng cho thư mục
 
 				//Cột thứ ba là cột Type
-				ListView_SetItemText(this->hListView_, nItemCount, 2, L"Thư mục");
+				ListView_SetItemText(this->hListView_, nItemCount, 2, L"File folder");
 
 				//Cột thứ tư là cột Date modified
 				TCHAR* date = Convert::ConvertDate(fd.ftLastWriteTime);
-				lstPointer_.AddPointer(date);
+				lstCircle_->AddPointer(date);
 				ListView_SetItemText(this->hListView_, nItemCount, 3, date);
 				++nItemCount;
 			}
@@ -450,7 +467,7 @@ namespace MyExplorer
 				((fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != FILE_ATTRIBUTE_HIDDEN))
 			{
 				filePath = new TCHAR[wcslen(path) + wcslen(fd.cFileName) + 2];
-				lstPointer_.AddPointer(filePath);
+				lstCircle_->AddPointer(filePath);
 
 				StrCpy(filePath, path);
 
@@ -469,7 +486,7 @@ namespace MyExplorer
 				ListView_InsertItem(this->hListView_, &lv);
 
 				TCHAR* size = new TCHAR[20];
-				lstPointer_.AddPointer(size);
+				lstCircle_->AddPointer(size);
 
 				StrCpy(size, const_cast<LPWSTR>(Convert::ConvertVol(fd.nFileSizeLow).c_str()));
 				//Cột thứ hai là Size
@@ -481,7 +498,7 @@ namespace MyExplorer
 
 				//Cột thứ tư là Date Modified	
 				TCHAR* date = Convert::ConvertDate(fd.ftLastWriteTime);
-				lstPointer_.AddPointer(date);
+				lstCircle_->AddPointer(date);
 				ListView_SetItemText(this->hListView_, nItemCount, 3, date);
 
 				++nItemCount;
