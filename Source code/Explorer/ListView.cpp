@@ -357,8 +357,9 @@ namespace MyExplorer
 
 	void ListView::LoadFileAndFolder(LPCWSTR path)
 	{
-		if (this->lstCircle_) CreateThread(NULL, 0, CollectGarbage, this->lstCircle_, 0, 0);
-		this->lstCircle_ = new ListPointer();
+		//if (this->lstCircle_) CreateThread(NULL, 0, CollectGarbage, this->lstCircle_, 0, 0);
+		//this->lstCircle_->ClearAll();
+		//this->lstCircle_ = new ListPointer();
 		this->InitFolderCol();
 		this->ClearAll();
 
