@@ -147,23 +147,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Convert.h" />
-    <ClInclude Include="Disk.h" />
     <ClInclude Include="Explorer.h" />
-    <ClInclude Include="ListDisk.h" />
     <ClInclude Include="ListPointer.h" />
     <ClInclude Include="ListView.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="StatusBar.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TreeView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Convert.cpp" />
-    <ClCompile Include="Disk.cpp" />
     <ClCompile Include="Explorer.cpp" />
-    <ClCompile Include="ListDisk.cpp" />
     <ClCompile Include="ListPointer.cpp" />
     <ClCompile Include="ListView.cpp" />
+    <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -176,28 +174,8 @@
     <ResourceCompile Include="Explorer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="C:\Users\cutim\Desktop\CD-large.ico" />
-    <Image Include="C:\Users\cutim\Desktop\CD-small.ico" />
-    <Image Include="C:\Users\cutim\Desktop\Disk-large.ico" />
-    <Image Include="C:\Users\cutim\Desktop\Disk-small.ico" />
-    <Image Include="C:\Users\cutim\Desktop\Folder-large.ico" />
-    <Image Include="C:\Users\cutim\Desktop\Folder-small.ico" />
-    <Image Include="C:\Users\cutim\Desktop\ThisPC-small.ico" />
-    <Image Include="C:\Users\cutim\Desktop\usb-large.ico" />
-    <Image Include="C:\Users\cutim\Desktop\usb-small.ico" />
     <Image Include="Explorer.ico" />
-    <Image Include="Icons\CD-large.ico" />
-    <Image Include="Icons\CD-small.ico" />
-    <Image Include="Icons\Disk-large.ico" />
-    <Image Include="Icons\Disk-small.ico" />
     <Image Include="Icons\Explorer.ico" />
-    <Image Include="Icons\Folder-large.ico" />
-    <Image Include="Icons\Folder-small.ico" />
-    <Image Include="Icons\ThisPC-small.ico" />
-    <Image Include="Icons\unknow.ico" />
-    <Image Include="Icons\Usb-large.ico" />
-    <Image Include="Icons\Usb-small.ico" />
-    <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

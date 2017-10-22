@@ -19,5 +19,13 @@
 
 
 // TODO: reference additional headers your program requires here
+#define STRICT_TYPED_ITEM­IDS
+#include <Shlobj.h>
+#include <Shellapi.h>
+
 #include <commctrl.h>
 #pragma comment(lib, "Comctl32.lib")
+
+#include <CommonControls.h>
+
+#define SPLITTER_BAR_WIDTH 10

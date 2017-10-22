@@ -35,26 +35,6 @@ IDI_EXPLORER            ICON                    "Icons\\Explorer.ico"
 
 IDI_SMALL               ICON                    "Icons\\Explorer.ico"
 
-IDI_CD_LARGE            ICON                    "Icons\\CD-large.ico"
-
-IDI_CD_SMALL            ICON                    "Icons\\CD-small.ico"
-
-IDI_DISK_LARGE          ICON                    "Icons\\Disk-large.ico"
-
-IDI_DISK_SMALL          ICON                    "Icons\\Disk-small.ico"
-
-IDI_THICPC_SMALL        ICON                    "Icons\\ThisPC-small.ico"
-
-IDI_FOLDER_LARGE        ICON                    "Icons\\Folder-large.ico"
-
-IDI_FOLDER_SMALL        ICON                    "Icons\\Folder-small.ico"
-
-IDI_USB_LARGE           ICON                    "Icons\\Usb-large.ico"
-
-IDI_USB_SMALL           ICON                    "Icons\\Usb-small.ico"
-
-IDI_UNKNOW_SMALL        ICON                    "Icons\\unknow.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -58,7 +58,7 @@ namespace MyExplorer
 		this->ID_ = ID;
 
 		this->hTreeView_ = CreateWindowEx(lExtStyle, WC_TREEVIEW, L"Tree View",
-			WS_CHILD | WS_VISIBLE | WS_BORDER | WS_SIZEBOX | WS_VSCROLL | WS_TABSTOP | lStyle,
+			WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP | lStyle,
 			x, y, Width, Height,
 			this->hParent_, (HMENU)this->ID_, this->hInst_, NULL);
 
@@ -69,23 +69,7 @@ namespace MyExplorer
 	{
 		this->hIml = new HIMAGELIST;
 
-		*hIml = ImageList_Create(16, 16, ILC_COLOR24 | ILC_MASK, 5, 0);
-
-		HICON hIcon;
-		hIcon = LoadIcon(this->hInst_, MAKEINTRESOURCE(IDI_THICPC_SMALL));
-		ImageList_AddIcon(*hIml, hIcon);
-
-		hIcon = LoadIcon(this->hInst_, MAKEINTRESOURCE(IDI_DISK_SMALL));
-		ImageList_AddIcon(*hIml, hIcon);
-
-		hIcon = LoadIcon(this->hInst_, MAKEINTRESOURCE(IDI_FOLDER_SMALL));
-		ImageList_AddIcon(*hIml, hIcon);
-
-		hIcon = LoadIcon(this->hInst_, MAKEINTRESOURCE(IDI_USB_SMALL));
-		ImageList_AddIcon(*hIml, hIcon);
-
-		hIcon = LoadIcon(this->hInst_, MAKEINTRESOURCE(IDI_CD_SMALL));
-		ImageList_AddIcon(*hIml, hIcon);
+		SHGetImageList(SHIL_SMALL, IID_IImageList, (void**)hIml);
 
 		TreeView_SetImageList(this->hTreeView_, *hIml, TVSIL_NORMAL);
 	}
@@ -101,37 +85,24 @@ namespace MyExplorer
 	}
 	/*-----------------------------------------------------------------------------------------------------*/
 	/*-----------------------------------------------------------------------------------------------------*/
-	LPCWSTR TreeView::GetPath(HTREEITEM hItem)
+	PIDLIST_ABSOLUTE TreeView::GetPIDL(HTREEITEM hItem)
 	{
 		TVITEMEX tv;
 		tv.mask = TVIF_PARAM;
 		tv.hItem = hItem;
 		TreeView_GetItem(this->hTreeView_, &tv);
-		return (LPCWSTR)tv.lParam;
+		return (PIDLIST_ABSOLUTE)tv.lParam;
 	}
 
-	LPCWSTR	TreeView::GetCurPath()
+	PIDLIST_ABSOLUTE	TreeView::GetCurPIDL()
 	{
-		return GetPath(GetCurSel());
+		return GetPIDL(GetCurSel());
+		return NULL;
 	}
 
 	HTREEITEM TreeView::GetCurSel()
 	{
 		return TreeView_GetNextItem(this->hTreeView_, NULL, TVGN_CARET);
-	}
-
-	LPCWSTR	TreeView::GetCurSelText()
-	{
-		TVITEMEX tv;
-		TCHAR *buffer = new TCHAR[256];
-		lstPointer_->AddPointer(buffer);
-
-		tv.mask = TVIF_TEXT;
-		tv.hItem = GetCurSel();
-		tv.pszText = buffer;
-		tv.cchTextMax = 256;
-		TreeView_GetItem(this->hTreeView_, &tv);
-		return (LPCWSTR)tv.pszText;
 	}
 
 	HTREEITEM TreeView::GetChild(HTREEITEM hItem)
@@ -140,124 +111,124 @@ namespace MyExplorer
 	}
 	/*-----------------------------------------------------------------------------------------------------*/
 	/*-----------------------------------------------------------------------------------------------------*/
-	void TreeView::LoadRoot(ListDisk *listDisk)
+	void TreeView::LoadRoot()
 	{
 		TV_INSERTSTRUCT tvInsert;
-		tvInsert.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+		tvInsert.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_CHILDREN;
 
-		// This PC
-		tvInsert.hParent = NULL;
-		tvInsert.hInsertAfter = TVI_ROOT;
-		tvInsert.item.iImage = IDI_THISPC;
-		tvInsert.item.iSelectedImage = IDI_THISPC;
-		tvInsert.item.pszText = L"This PC";
-		tvInsert.item.lParam = (LPARAM)L"This PC";
-		HTREEITEM hThisPC = TreeView_InsertItem(this->hTreeView_, &tvInsert);
+		LPSHELLFOLDER psfDesktop = NULL;
+		SHGetDesktopFolder(&psfDesktop);
 
-		// Load các ổ đĩa đang có trong máy
-		for (int i = 0; i < listDisk->GetAmount(); ++i)
+		LPENUMIDLIST penumIDL = NULL;
+		psfDesktop->EnumObjects(NULL, SHCONTF_FOLDERS, &penumIDL);
+
+		PIDLIST_ABSOLUTE pidNext = NULL;
+		HRESULT hr = NULL;
+		
+		hr = penumIDL->Next(1, &pidNext, NULL);
+		HTREEITEM hThisPC = NULL;
+		// Load ThisPC
+		if (SUCCEEDED(hr))
 		{
-			tvInsert.hParent = hThisPC; //Them
-			tvInsert.item.iImage = listDisk->GetIconID(i);
-			tvInsert.item.mask = TVIF_CHILDREN | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-			tvInsert.item.cChildren = 1;
-			tvInsert.item.iSelectedImage = listDisk->GetIconID(i);
-			tvInsert.item.pszText = listDisk->GetFullDiskName(i);
-			tvInsert.item.lParam = (LPARAM)listDisk->GetDiskPath(i);
+			SHFILEINFO sfi = { 0 };
+			SHGetFileInfo((LPCTSTR)(LPCITEMIDLIST)pidNext, 0, &sfi, sizeof(SHFILEINFO), SHGFI_PIDL | SHGFI_DISPLAYNAME | SHGFI_ATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
 
-			TreeView_InsertItem(this->hTreeView_, &tvInsert);
+			tvInsert.hParent = NULL;
+			tvInsert.hInsertAfter = TVI_ROOT;
+			tvInsert.item.iImage = sfi.iIcon;
+			tvInsert.item.iSelectedImage = sfi.iIcon;
+			tvInsert.item.pszText = sfi.szDisplayName;
+			tvInsert.item.cChildren = 0;
+
+			if ((sfi.dwAttributes & SFGAO_HASSUBFOLDER) == SFGAO_HASSUBFOLDER)
+			{
+				tvInsert.item.cChildren = 1;
+			}
+
+			tvInsert.item.lParam = (LPARAM)pidNext;
+
+			hThisPC = TreeView_InsertItem(this->hTreeView_, &tvInsert);
 		}
 
-		// Mặc định cho ThisPC expand và select luôn
-		TreeView_Expand(this->hTreeView_, hThisPC, TVE_EXPAND);
+		do
+		{
+			hr = penumIDL->Next(1, &pidNext, NULL);
+			if (hr == S_OK)
+			{	
+				SHFILEINFO sfi = { 0 };
+				SHGetFileInfo((LPCTSTR)(LPCITEMIDLIST)pidNext, 0, &sfi, sizeof(SHFILEINFO), SHGFI_PIDL | SHGFI_DISPLAYNAME | SHGFI_ATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+
+				tvInsert.hParent = NULL;
+				tvInsert.hInsertAfter = TVI_ROOT;
+				tvInsert.item.iImage = sfi.iIcon;
+				tvInsert.item.iSelectedImage = sfi.iIcon;
+				tvInsert.item.pszText = sfi.szDisplayName;
+				tvInsert.item.cChildren = 0;
+
+				if ((sfi.dwAttributes & SFGAO_HASSUBFOLDER) == SFGAO_HASSUBFOLDER)
+				{
+					tvInsert.item.cChildren = 1;
+				}
+				
+				tvInsert.item.lParam = (LPARAM)pidNext;
+				TreeView_InsertItem(this->hTreeView_, &tvInsert);
+			}
+		} while (hr == S_OK);
+
+		psfDesktop->Release();
+		
 		TreeView_SelectItem(this->hTreeView_, hThisPC);
 	}
 
-	void TreeView::LoadChild(HTREEITEM &hParent, LPCWSTR path, BOOL bShowHiddenSystem)
+	void TreeView::LoadChild(HTREEITEM &hParent, PIDLIST_ABSOLUTE pidl)
 	{
-		std::wstring pathHandle;
-		pathHandle = path;
-
-		pathHandle += L"\\*";
-
 		TV_INSERTSTRUCT tvInsert;
 		tvInsert.hParent = hParent;
 		tvInsert.hInsertAfter = TVI_LAST;
 		tvInsert.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_CHILDREN;
 		tvInsert.item.cChildren = 0;
-		tvInsert.item.iImage = IDI_FOLDER;
-		tvInsert.item.iSelectedImage = IDI_FOLDER;
+		
+		HRESULT hr = NULL;
 
-		WIN32_FIND_DATA fd;
-		HANDLE hFile = FindFirstFileW(const_cast<LPWSTR>(pathHandle.c_str()), &fd);
-		BOOL bFound = 1;
+		LPSHELLFOLDER lpfParent;
+		LPENUMIDLIST penumIDL = NULL;
+		hr = SHBindToObject(NULL, pidl, NULL, IID_IShellFolder, (void**)&lpfParent);
+		lpfParent->EnumObjects(NULL, SHCONTF_FOLDERS, &penumIDL);
 
-		if (hFile == INVALID_HANDLE_VALUE)
-			bFound = FALSE;
+		PIDLIST_RELATIVE pidNext = NULL;		
+		PIDLIST_ABSOLUTE pidNextFull = NULL;
 
-		TCHAR* folderPath = NULL;
-		while (bFound)
+		do
 		{
-			tvInsert.item.cChildren = 0;
-			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				&& ((fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != FILE_ATTRIBUTE_HIDDEN)
-				&& ((fd.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != FILE_ATTRIBUTE_SYSTEM)
-				&& (StrCmp(fd.cFileName, L".") != 0) && (StrCmp(fd.cFileName, L"..") != 0))
+			hr = penumIDL->Next(1, &pidNext, NULL);
+			if (hr == S_OK)
 			{
-				tvInsert.item.pszText = fd.cFileName;
-				int len = pathHandle.length() + wcslen(fd.cFileName) + 2;
-				folderPath = new TCHAR[len];
-				lstPointer_->AddPointer(folderPath);
+				pidNextFull = ILCombine(pidl, pidNext);
+				
+				SHFILEINFO sfi = { 0 };
+				sfi.iIcon = 0;
+				SHGetFileInfo((LPCTSTR)(LPCITEMIDLIST)pidNextFull, 0, &sfi, sizeof(SHFILEINFO), SHGFI_PIDL | SHGFI_DISPLAYNAME | SHGFI_ATTRIBUTES | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+				
+				tvInsert.item.iImage = sfi.iIcon;
+				tvInsert.item.iSelectedImage = sfi.iIcon;
+				tvInsert.item.pszText = sfi.szDisplayName;
+				tvInsert.item.cChildren = 0;
 
-				StrCpy(folderPath, path);
-				if (wcslen(path) != 3)
-					StrCat(folderPath, L"\\");
-				StrCat(folderPath, fd.cFileName);
-
-				tvInsert.item.lParam = (LPARAM)folderPath;
-
-				//Preload
-				WIN32_FIND_DATA fd_;
-				std::wstring pathChild = folderPath;
-				pathChild += L"\\*";
-				HANDLE hFile_ = FindFirstFileW(const_cast<LPWSTR>(pathChild.c_str()), &fd_);
-
-				BOOL bFound_ = true;
-
-				if (hFile_ == INVALID_HANDLE_VALUE)
+				if ((sfi.dwAttributes & SFGAO_HASSUBFOLDER) == SFGAO_HASSUBFOLDER)
 				{
-					bFound_ = FALSE;
+					tvInsert.item.cChildren = 1;
 				}
 
-				// Tìm thấy thư mục hay tập tin thì thêm cChildren
-				while (bFound_)
-				{
-					if ((fd_.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-						&& (StrCmp(fd_.cFileName, L".") != 0) && (StrCmp(fd_.cFileName, L"..") != 0))
-					{
-						tvInsert.item.cChildren = 1;
-						break;
-					}
-					else
-						bFound_ = FindNextFileW(hFile_, &fd_);
-				}
-				// Preload
+				tvInsert.item.lParam = (LPARAM)pidNextFull;
 
-				HTREEITEM hItem = TreeView_InsertItem(this->hTreeView_, &tvInsert);
+				TreeView_InsertItem(this->hTreeView_, &tvInsert);
 			}
-
-			bFound = FindNextFileW(hFile, &fd);
-		}//while
+		} while (hr == S_OK);
 	}
 
 	void TreeView::Expanding(HTREEITEM hPrev, HTREEITEM hCurSel)
 	{
-		if (hCurSel == GetRoot()) //Nếu ThisPC chưa nạp thoát
-			return;
-
-		HTREEITEM hCurSelChild = TreeView_GetChild(this->hTreeView_, hCurSel);
-
-		LoadChild(hCurSel, GetPath(hCurSel));
+		LoadChild(hCurSel, GetPIDL(hCurSel));
 	}
 
 	void TreeView::Expand(HTREEITEM hItem)
@@ -273,7 +244,7 @@ namespace MyExplorer
 		RECT windowRC;
 		GetWindowRect(this->hParent_, &windowRC);
 
-		MoveWindow(this->hTreeView_, 0, 0, treeRC.right - treeRC.left, windowRC.bottom - windowRC.top - 60, SWP_SHOWWINDOW);
+		MoveWindow(this->hTreeView_, 0, 0, treeRC.right - treeRC.left, windowRC.bottom - windowRC.top - 82, SWP_SHOWWINDOW);
 	}
 	/*-----------------------------------------------------------------------------------------------------*/
 }

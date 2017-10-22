@@ -33,12 +33,6 @@
     <ClInclude Include="TreeView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ListDisk.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Disk.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ListView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -46,6 +40,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ListPointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,12 +56,6 @@
     <ClCompile Include="TreeView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ListDisk.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Disk.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ListView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,6 +65,9 @@
     <ClCompile Include="ListPointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StatusBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Explorer.rc">
@@ -81,70 +75,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Explorer.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="C:\Users\cutim\Desktop\CD-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\CD-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\Disk-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\Disk-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\ThisPC-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\Folder-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\Folder-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\usb-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="C:\Users\cutim\Desktop\usb-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Icons\Explorer.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\CD-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\CD-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Disk-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Disk-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\ThisPC-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Folder-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Folder-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Usb-large.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\Usb-small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Icons\unknow.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

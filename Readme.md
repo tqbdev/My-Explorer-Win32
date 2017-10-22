@@ -7,7 +7,7 @@
 5. Release: Bản release được build ở dạng release.
 ### -------------- HAVE DONE --------------
 1. Giao diện chương trình. (TreeView, ListView)
-2. Xử lý TreeView, ListView, FileSystem.
+2. Xử lý TreeView, ListView, FileSystem
 3. Cụ thể:
 
 > #TreeView
@@ -34,6 +34,25 @@ giải quyết được tình trạng chạy nhiều lần sẽ bị treo ứng 
 2. Sử dụng kỹ thuật thread để load tránh crash ứng dụng lúc load quá nhiều dữ liệu như là
 load folder System32
 
+### ------------- CHANGE LOG --------------
+1. Giao diện thêm Status Bar cho ứng dụng.
+2. Thêm xử lý Shell, ini.
+3. Cụ thể:
+
+> #TreeView
+1. Load được các thư mục khác như User.
+2. Load được các ổ đĩa Network Drive.
+3. Load được các thư mục gần giống như Explorer.
+
+> #ListView
+1. Hiện tại bỏ tính năng dùng thư mục ".." để trở về thư mục cha. Sẽ fix sau.
+
+> #GUI
+1. Sử dụng icon của toàn hệ thống không phải load.
+2. Không còn sử dụng các icon set cứng.
+3. Sử dụng kỹ thuật SLIPTER để thay đổi chiều rộng của #TreeView và #ListView cùng lúc.
+Bỏ kỹ thuật cũ.
+
 ### -------------- MAIN FLOW --------------
 1. Chạy chương trình hiển thị node ThisPC trên TreeView ở trạng thái expand (mở rộng),
 gồm các danh sách ổ đĩa hiện có trong máy (không xử lý đĩa mềm :v)
@@ -51,8 +70,9 @@ Không có
 > https://1512029@bitbucket.org/1512029/explorer.git
 ```
 Chú ý link repository trên là private đã add key public của giáo viên.
-Đồng thời add user tdquang7 vào repository với quyền read.
+Đồng thời add user tdquang7_edu vào repository với quyền read.
 ```
 ### ------------- LINK YOUTUBE ------------
 > ver 1.0: https://youtu.be/lkTBUPsHiHU
 > ver 2.0: https://youtu.be/1HACDOUGAtw
+> ver 3.0: https://youtu.be/AW7Dgtz8BFo

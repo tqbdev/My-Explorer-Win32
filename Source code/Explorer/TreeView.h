@@ -6,7 +6,8 @@
 #include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")
 
-#include "ListDisk.h"
+#include "Convert.h"
+#include "ListPointer.h"
 
 namespace MyExplorer
 {
@@ -36,14 +37,14 @@ namespace MyExplorer
 		HTREEITEM		GetRoot();
 		void			SetFocus_();
 
-		LPCWSTR			GetPath(HTREEITEM hItem);
-		LPCWSTR			GetCurPath();
+		PIDLIST_ABSOLUTE			GetPIDL(HTREEITEM hItem);
+		PIDLIST_ABSOLUTE			GetCurPIDL();
+
 		HTREEITEM		GetCurSel();
-		LPCWSTR			GetCurSelText();
 		HTREEITEM		GetChild(HTREEITEM hItem);
 		
-		void			LoadRoot(ListDisk *drive);
-		void			LoadChild(HTREEITEM &hParent, LPCWSTR path, BOOL bShowHiddenSystem = FALSE);
+		void			LoadRoot();
+		void			LoadChild(HTREEITEM &hParent, PIDLIST_ABSOLUTE pidl);
 		void			Expanding(HTREEITEM hPrev, HTREEITEM hCurSel);
 		void			Expand(HTREEITEM hItem);
 		void			Resize();
