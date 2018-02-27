@@ -1,10 +1,10 @@
-# Readme for deadline Explorer
+# My Explorer Win32
 ### ---------------- INFO ----------------
-1. ID: 1512029
-2. Name: Trần Quốc Bảo
-3. Emal: tranquocbao3897@gmail.com
-4. Version Visual Studio: Community 2017 
-5. Release: Bản release được build ở dạng release.
+1. Name: Trần Quốc Bảo
+2. Emal: tranquocbao3897@gmail.com
+3. Version Visual Studio: Community 2017 
+4. Release: Bản release được build ở dạng release.
+
 ### -------------- HAVE DONE --------------
 1. Giao diện chương trình. (TreeView, ListView)
 2. Xử lý TreeView, ListView, FileSystem
@@ -64,15 +64,15 @@ xuất hiện danh sách thư mục con của ổ đĩa. Đồng thời ListView
 nhấp đúp chuột vào tập tin để khởi động.
 5. Ở ListView, người dùng muốn trở về thư mục cha có thể nhấp đúp chuột vào thư mục ".." giống như Total Commander,
 sẽ trở về đến khi nào về lại danh sách ổ đĩa.
+
 ### ---------- ADDITIONAL FLOW ------------
 Không có
-### ------------ LINK BITBUCKET -----------
+
+### ------ GIT ORIGINAL (BITBUCKET) -------
 > https://1512029@bitbucket.org/1512029/explorer.git
-```
-Chú ý link repository trên là private đã add key public của giáo viên.
-Đồng thời add user tdquang7_edu vào repository với quyền read.
-```
+
+
 ### ------------- LINK YOUTUBE ------------
-> ver 1.0: https://youtu.be/lkTBUPsHiHU
-> ver 2.0: https://youtu.be/1HACDOUGAtw
-> ver 3.0: https://youtu.be/AW7Dgtz8BFo
+1. ver 1.0: https://youtu.be/lkTBUPsHiHU
+2. ver 2.0: https://youtu.be/1HACDOUGAtw
+3. ver 3.0: https://youtu.be/AW7Dgtz8BFo
